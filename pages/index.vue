@@ -111,15 +111,7 @@ export default defineComponent({
       }
     },
     random(): number { return Math.floor(Math.random() * 4); },
-    randomize(): void {
-      for (let i = 0; i < this.rows; i++) {
-        let row = [];
-        for (let k = 0; k < this.columns; k++) {
-          row.push({ form: this.random(), id: (i * this.rows) + k, rotation: this.random() });
-        }
-        this.tiles.push(row);
-      }
-    },
+    randomize(): void { for (let i = 0; i < this.rows; i++) this.addRow(); },
   },
   watch: {
     columns(val: number, old: number): void {
