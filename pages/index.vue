@@ -70,18 +70,22 @@ export default defineComponent({
         const up = this.tiles[row - 1][col];
         this.tiles[row - 1][col] = this.tiles[row][col];
         this.tiles[row][col] = up;
+        this.activeTile = { row: row - 1, column: col };
       } else if (key === "s") {
         const down = this.tiles[row + 1][col];
         this.tiles[row + 1][col] = this.tiles[row][col];
         this.tiles[row][col] = down;
+        this.activeTile = { row: row + 1, column: col };
       } else if (key === "a") {
         const left = this.tiles[row][col - 1];
         this.tiles[row][col - 1] = this.tiles[row][col];
         this.tiles[row][col] = left;
+        this.activeTile = { row: row, column: col - 1 };
       } else if (key === "d") {
         const up = this.tiles[row][col + 1];
         this.tiles[row][col + 1] = this.tiles[row][col];
         this.tiles[row][col] = up;
+        this.activeTile = { row: row, column: col + 1 };
       } else if (key === "q") this.tiles[row][col].rotation--;
       else if (key === "e") this.tiles[row][col].rotation++;
     },
