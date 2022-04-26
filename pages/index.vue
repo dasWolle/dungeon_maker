@@ -2,8 +2,8 @@
   <div class="flex flex-col gap-4">
     <h1 class="text-3xl mx-auto" @click="randomize">Dungeon Maker</h1>
     <div class="flex gap-8 justify-center">
-      <label>Zeilen: <input v-model="rowsC" class="input" max="30" min="1" type="number"></label>
-      <label>Spalten: <input v-model="columnsC" class="input" max="10" min="1" type="number"></label>
+      <label>Zeilen: <input v-model="rowsC" class="input" max="30" min="1" type="number" @focusin="activeTile = { row: -1, column: -1 }"></label>
+      <label>Spalten: <input v-model="columnsC" class="input" max="10" min="1" type="number" @focusin="activeTile = { row: -1, column: -1 }"></label>
     </div>
     <div class="flex">
       <div ref="floor" :style="`--columns:${columns};`" class="floor grid mx-auto">
@@ -102,6 +102,7 @@ export default defineComponent({
       if (key === "Tab") {
         event.preventDefault();
         event.stopPropagation();
+        if (document.activeElement.tagName === "INPUT") (document.activeElement as HTMLInputElement).blur();
         if (row === -1) this.activeTile = { column: 0, row: 0 };
         else {
           if (row === (this.rows - 1) && col === (this.columns - 1)) this.activeTile = { column: 0, row: 0 };
