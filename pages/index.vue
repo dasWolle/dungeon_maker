@@ -68,23 +68,19 @@ export default defineComponent({
     changeTile(key: string, row: number, col: number): void {
       if (key === "w") {
         const up = this.tiles[row - 1][col];
-        const active = this.tiles[row][col];
-        this.tiles[row - 1][col] = active;
+        this.tiles[row - 1][col] = this.tiles[row][col];
         this.tiles[row][col] = up;
       } else if (key === "s") {
         const down = this.tiles[row + 1][col];
-        const active = this.tiles[row][col];
-        this.tiles[row + 1][col] = active;
+        this.tiles[row + 1][col] = this.tiles[row][col];
         this.tiles[row][col] = down;
       } else if (key === "a") {
         const left = this.tiles[row][col - 1];
-        const active = this.tiles[row][col];
-        this.tiles[row][col - 1] = active;
+        this.tiles[row][col - 1] = this.tiles[row][col];
         this.tiles[row][col] = left;
       } else if (key === "d") {
         const up = this.tiles[row][col + 1];
-        const active = this.tiles[row][col];
-        this.tiles[row][col + 1] = active;
+        this.tiles[row][col + 1] = this.tiles[row][col];
         this.tiles[row][col] = up;
       } else if (key === "q") this.tiles[row][col].rotation--;
       else if (key === "e") this.tiles[row][col].rotation++;
@@ -93,24 +89,20 @@ export default defineComponent({
       const row = this.activeTile.row;
       const col = this.activeTile.column;
       if ([ "q", "w", "e", "a", "s", "d" ].includes(event.key)) this.changeTile(event.key, row, col);
-      else if ([ "Tab", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].includes(event.key)) this.moveSelection(event.key, row, col, event);
+      else if ([ "Tab", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].includes(event.key)) this.moveSelection(event.key, row, col);
     },
-    moveSelection(key: string, row: number, col: number, event: KeyboardEvent): void {
-      const isTop = row === 0;
-      const isBottom = row === (this.rows - 1);
-      const isLeft = col === 0;
-      const isRight = col === (this.columns - 1);
+    moveSelection(key: string, row: number, col: number): void {
       if (key === "ArrowUp") {
-        if (isTop) this.activeTile.row = this.rows - 1;
+        if (row === 0) this.activeTile.row = this.rows - 1;
         else this.activeTile.row--;
       } else if (key === "ArrowDown") {
-        if (isBottom) this.activeTile.row = 0;
+        if (row === (this.rows - 1)) this.activeTile.row = 0;
         else this.activeTile.row++;
       } else if (key === "ArrowLeft") {
-        if (isLeft) this.activeTile.column = this.columns - 1;
+        if (col === 0) this.activeTile.column = this.columns - 1;
         else this.activeTile.column--;
       } else if (key === "ArrowRight") {
-        if (isRight) this.activeTile.column = 0;
+        if (col === (this.columns - 1)) this.activeTile.column = 0;
         else this.activeTile.column++;
       }
     },
