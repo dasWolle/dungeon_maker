@@ -1,14 +1,19 @@
 <template>
-  <div class="container">
-    <h1 class="text-3xl" @click="randomize">Dungeon Maker</h1>
+  <div class="flex flex-col gap-4">
+    <h1 class="text-3xl mx-auto" @click="randomize">Dungeon Maker</h1>
+    <div class="flex gap-8 justify-center">
+      <label>Zeilen: <input v-model="rowsC" class="input" max="30" min="1" type="number"></label>
+      <label>Spalten: <input v-model="columnsC" class="input" max="10" min="1" type="number"></label>
+    </div>
     <div class="flex">
-      <div ref="floor" class="floor grid grid-cols-3 mx-auto">
+      <div ref="floor" :style="`--columns:${columns};`" class="floor grid mx-auto">
         <template v-for="(row, rowIndex) in tiles">
           <template v-for="(tile, column) in row" :key="tile.id">
             <Tile
                 :active="(activeTile.column === column) && (activeTile.row === rowIndex)"
+                :data-row="rowIndex"
                 :form="tile.form"
-                :orientation="tile.orientation"
+                :rotation="tile.rotation"
                 @click="activeTile= { column, row: rowIndex }"
             />
           </template>
@@ -20,6 +25,7 @@
 
 <script lang="ts">
 import { defineComponent } from "@vue/runtime-core";
+import { Tile } from "~/env";
 
 export default defineComponent({
   name: "index",
@@ -27,47 +33,125 @@ export default defineComponent({
     return {
       activeTile: { row: -1, column: -1 },
       columns: 3,
-      rows: 3,
-      tiles: [
-        [ { form: 1, id: 0, orientation: 1 }, { form: 2, id: 1, orientation: 2 }, { form: 1, id: 2, orientation: 2 } ],
-        [ { form: 0, id: 3, orientation: 1 }, { form: 0, id: 4, orientation: 1 }, { form: 0, id: 5, orientation: 1 } ],
-        [ { form: 1, id: 6, orientation: 0 }, { form: 2, id: 7, orientation: 0 }, { form: 1, id: 8, orientation: 3 } ]
-      ],
+      lastId: -1,
+      rows: 4,
+      tiles: [] as Tile[][],
     };
   },
+  computed: {
+    columnsC: {
+      set(val) {
+        if (val > 0) this.columns = val;
+        else this.columns = 1;
+      },
+      get() { return this.columns; }
+    },
+    rowsC: {
+      set(val) {
+        if (val > 0) this.rows = val;
+        else this.rows = 1;
+      },
+      get() { return this.rows; }
+    }
+  },
   methods: {
+    addTile(row: Tile[]): void {
+      row.push({ form: this.random(), id: this.lastId + 1, rotation: this.random() });
+      this.lastId++;
+    },
+    addRow() {
+      let row = [];
+      for (let k = 0; k < this.columns; k++) this.addTile(row);
+      this.tiles.push(row);
+    },
+    changeTile(key: string, row: number, col: number): void {
+      if (key === "w") {
+        const up = this.tiles[row - 1][col];
+        const active = this.tiles[row][col];
+        this.tiles[row - 1][col] = active;
+        this.tiles[row][col] = up;
+      } else if (key === "s") {
+        const down = this.tiles[row + 1][col];
+        const active = this.tiles[row][col];
+        this.tiles[row + 1][col] = active;
+        this.tiles[row][col] = down;
+      } else if (key === "a") {
+        const left = this.tiles[row][col - 1];
+        const active = this.tiles[row][col];
+        this.tiles[row][col - 1] = active;
+        this.tiles[row][col] = left;
+      } else if (key === "d") {
+        const up = this.tiles[row][col + 1];
+        const active = this.tiles[row][col];
+        this.tiles[row][col + 1] = active;
+        this.tiles[row][col] = up;
+      } else if (key === "q") this.tiles[row][col].rotation--;
+      else if (key === "e") this.tiles[row][col].rotation++;
+    },
     keypress(event: KeyboardEvent): void {
-      console.log(event.key);
-      if (event.key === "Tab") {
+      const row = this.activeTile.row;
+      const col = this.activeTile.column;
+      if ([ "q", "w", "e", "a", "s", "d" ].includes(event.key)) this.changeTile(event.key, row, col);
+      else if ([ "Tab", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].includes(event.key)) this.moveSelection(event.key, row, col, event);
+    },
+    moveSelection(key: string, row: number, col: number, event: KeyboardEvent): void {
+      const isTop = row === 0;
+      const isBottom = row === (this.rows - 1);
+      const isLeft = col === 0;
+      const isRight = col === (this.columns - 1);
+      if (key === "Tab") {
         event.preventDefault();
         event.stopPropagation();
-        if (this.activeTile.row === -1) this.activeTile = { column: 0, row: 0 };
+        if (row === -1) this.activeTile = { column: 0, row: 0 };
         else {
-          if (this.activeTile.row === (this.rows - 1) && this.activeTile.column === (this.columns - 1)) this.activeTile = { column: 0, row: 0 };
+          if (row === (this.rows - 1) && col === (this.columns - 1)) this.activeTile = { column: 0, row: 0 };
           else {
-            if (this.activeTile.column === (this.columns - 1)) this.activeTile = { column: 0, row: this.activeTile.row + 1 };
-            else this.activeTile = { column: this.activeTile.column + 1, row: this.activeTile.row };
+            if (col === (this.columns - 1)) this.activeTile = { column: 0, row: row + 1 };
+            else this.activeTile = { column: col + 1, row: row };
           }
         }
-      } else if (event.key === "ArrowUp" || event.key === "w") {
-        const up = this.tiles[this.activeTile.row - 1][this.activeTile.column];
-        const active = this.tiles[this.activeTile.row][this.activeTile.column];
-        this.tiles[this.activeTile.row - 1][this.activeTile.column] = active;
-        this.tiles[this.activeTile.row][this.activeTile.column] = up;
+      } else if (key === "ArrowUp") {
+        if (isTop) this.activeTile.row = this.rows - 1;
+        else this.activeTile.row--;
+      } else if (key === "ArrowDown") {
+        if (isBottom) this.activeTile.row = 0;
+        else this.activeTile.row++;
+      } else if (key === "ArrowLeft") {
+        if (isLeft) this.activeTile.column = this.columns - 1;
+        else this.activeTile.column--;
+      } else if (key === "ArrowRight") {
+        if (isRight) this.activeTile.column = 0;
+        else this.activeTile.column++;
       }
     },
     random(): number { return Math.floor(Math.random() * 4); },
     randomize(): void {
-      this.tiles.forEach(row => {
-        row.forEach(tile => {
-          tile.form = this.random();
-          tile.orientation = this.random();
-        });
-      });
+      for (let i = 0; i < this.rows; i++) {
+        let row = [];
+        for (let k = 0; k < this.columns; k++) {
+          row.push({ form: this.random(), id: (i * this.rows) + k, rotation: this.random() });
+        }
+        this.tiles.push(row);
+      }
+    },
+  },
+  watch: {
+    columns(val: number, old: number): void {
+      if (val < old) {
+        while (val < this.tiles[0].length) {
+          this.tiles.forEach((row: Tile[]) => row.pop());
+        }
+      } else if (val > old) this.tiles.forEach((row: Tile[]) => this.addTile(row));
+    },
+    rows(val: number, old: number): void {
+      if (val < old) {
+        while (val < this.tiles.length) this.tiles.pop();
+      } else if (val > old) this.addRow();
     },
   },
   mounted() {
     if (process.client) window.addEventListener("keydown", this.keypress);
+    this.randomize();
   }
 });
 </script>
@@ -76,6 +160,10 @@ export default defineComponent({
   .floor {
     @apply bg-earth;
     gap: 2px;
+    grid-template-columns: repeat(var(--columns), 1fr);
     --tile-size: 4rem;
+  }
+  .input {
+    @apply w-16 border border-gray-500 rounded-lg px-2 pb-1;
   }
 </style>

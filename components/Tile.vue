@@ -1,5 +1,5 @@
 <template>
-  <div :class="tileClass" class="tile_wrapper">
+  <div ref="tile_wrapper" :class="tileClass" :style="`--rotation:${this.rotationC};`" class="tile_wrapper">
     <TileLine v-if="formC === 0" class="tile"/>
     <TileCorner v-if="formC === 1" class="tile"/>
     <TileT v-if="formC === 2" class="tile"/>
@@ -15,7 +15,7 @@ export default defineComponent({
   props: {
     active: { type: Boolean, default: false },
     form: { type: [ Number, String ] },
-    orientation: { type: [ Number, String ] },
+    rotation: { type: [ Number, String ], default: 0 },
   },
   computed: {
     formC() {
@@ -24,23 +24,16 @@ export default defineComponent({
         else return this.form;
       } else return 0;
     },
-    orientationC() {
-      if (this.orientation) {
-        if (typeof this.orientation === "string") return parseInt(this.orientation);
-        else return this.orientation;
-      } else return 0;
-    },
-    tileClass() { return `orientation-${this.orientationC}` + (this.active ? " active" : ""); }
+    rotationC() { return `${this.rotation * 90}deg`; },
+    tileClass() { return this.active ? " active" : ""; }
   },
 });
 </script>
 
 <style lang="scss">
   .tile_wrapper {
+    transform: rotate(var(--rotation, 0deg));
     transition: transform .2s ease-in-out;
-    &.orientation-1 { transform: rotate(90deg); }
-    &.orientation-2 { transform: rotate(180deg); }
-    &.orientation-3 { transform: rotate(-90deg); }
     &.active { @apply outline outline-2 outline-blue-600; }
   }
   .tile {
