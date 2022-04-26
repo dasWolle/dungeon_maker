@@ -1,10 +1,10 @@
 <template>
-  <div ref="tile_wrapper" :class="tileClass" :style="`--rotation:${this.rotationC};`" class="tile_wrapper">
+  <button ref="tile_wrapper" :class="tileClass" :style="`--rotation:${this.rotationC};`" class="tile_wrapper">
     <TileLine v-if="formC === 0" class="tile"/>
     <TileCorner v-if="formC === 1" class="tile"/>
     <TileT v-if="formC === 2" class="tile"/>
     <TileCross v-if="formC === 3" class="tile"/>
-  </div>
+  </button>
 </template>
 
 <script lang="ts">
@@ -27,6 +27,12 @@ export default defineComponent({
     rotationC() { return `${this.rotation * 90}deg`; },
     tileClass() { return this.active ? " active" : ""; }
   },
+  watch: {
+    active(val) {
+      if (val) this.$refs.tile_wrapper.focus();
+      else this.$refs.tile_wrapper.blur();
+    }
+  }
 });
 </script>
 

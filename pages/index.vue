@@ -15,6 +15,7 @@
                 :form="tile.form"
                 :rotation="tile.rotation"
                 @click="activeTile= { column, row: rowIndex }"
+                @focusin="activeTile={row: rowIndex, column: column}"
             />
           </template>
         </template>
@@ -99,19 +100,7 @@ export default defineComponent({
       const isBottom = row === (this.rows - 1);
       const isLeft = col === 0;
       const isRight = col === (this.columns - 1);
-      if (key === "Tab") {
-        event.preventDefault();
-        event.stopPropagation();
-        if (document.activeElement.tagName === "INPUT") (document.activeElement as HTMLInputElement).blur();
-        if (row === -1) this.activeTile = { column: 0, row: 0 };
-        else {
-          if (row === (this.rows - 1) && col === (this.columns - 1)) this.activeTile = { column: 0, row: 0 };
-          else {
-            if (col === (this.columns - 1)) this.activeTile = { column: 0, row: row + 1 };
-            else this.activeTile = { column: col + 1, row: row };
-          }
-        }
-      } else if (key === "ArrowUp") {
+      if (key === "ArrowUp") {
         if (isTop) this.activeTile.row = this.rows - 1;
         else this.activeTile.row--;
       } else if (key === "ArrowDown") {
